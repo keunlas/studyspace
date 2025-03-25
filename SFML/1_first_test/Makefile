@@ -3,9 +3,9 @@ SFML_FLAGS := -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lsfml-ne
 all: main.out
 
 main.out: main.cpp
-	g++ $^ -o $@ $(SFML_FLAGS)
+	g++ $^ -o $@ $(SFML_FLAGS) -g
 
 clean:
-	rm *.out *.o
+	rm main.out
 
 rebuild: clean all

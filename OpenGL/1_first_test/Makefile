@@ -18,15 +18,15 @@ GL_FLAGS := -lglfw -lGL -lX11 -lpthread -lXrandr -lXi -ldl
 all: $(TARGET)
 
 $(TARGET): $(TARGET_OBJS) $(GLAD_OBJ)
-	$(CXX) $^ -o $@ $(GL_FLAGS)
+	$(CXX) $^ -o $@ $(GL_FLAGS) -g
 
 $(TARGET_OBJS): $(TARGET_SRCS)
 %.o: %.cpp
-	$(CXX) -c $< -o $@
+	$(CXX) -c $< -o $@ -g
 
 # GLAD 编译
 $(GLAD_OBJ): $(GLAD_SRC)
-	$(CC) -c $^ -o $@
+	$(CC) -c $^ -o $@ -g
 
 # 清理
 clean:

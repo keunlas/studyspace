@@ -12,10 +12,10 @@ all: $(TARGETS)
 $(TARGETS): $(OBJS)
 
 %.o: %.s
-	$(AS) $< -o $@
+	$(AS) $< -o $@ -g
 
 %.out: %.o
-	$(LD) $< -o $@
+	$(LD) $< -o $@ -g
 
 # 清理目标文件和可执行文件
 clean:
