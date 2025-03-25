@@ -24,7 +24,7 @@ $(TARGET_OBJS): $(TARGET_SRCS)
 %.o: %.cpp
 	$(CXX) -c $< -o $@
 
-# GLAD
+# GLAD 编译
 $(GLAD_OBJ): $(GLAD_SRC)
 	$(CC) -c $^ -o $@
 

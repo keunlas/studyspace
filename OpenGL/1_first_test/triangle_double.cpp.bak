@@ -1,0 +1,303 @@
+#ifndef __glad_h_
+#include <glad/glad.h>
+#endif
+#include <GLFW/glfw3.h>
+
+#include <iostream>
+
+void processInput(GLFWwindow* window) {
+  // 使用 GLFW 的 glfwGetKey 函数，它需要一个窗口以及一个按键作为输入
+  // 这个函数将会返回这个按键是否正在被按下
+  // 如果没有按下，glfwGetKey 将会返回 GLFW_RELEASE
+  // 如果按下，glfwGetKey 将会返回 GLFW_PRESS
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+    std::cout << "Key 'ESC' pressed!" << std::endl;
+
+    // glfwSetWindowShouldClose 函数会通知 GLFW 该关闭了
+    // WindowShouldClose 属性将被设置为 true 来关闭GLFW
+    // 下一次循环的 glfwWindowShouldClose 函数将会返回 true
+    glfwSetWindowShouldClose(window, true);
+  }
+
+  // 测试一下其他的按键
+  if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    std::cout << "Key 'W' pressed!" << std::endl;
+  }
+  if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    std::cout << "Key 'S' pressed!" << std::endl;
+  }
+  if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    std::cout << "Key 'A' pressed!" << std::endl;
+  }
+  if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    std::cout << "Key 'D' pressed!" << std::endl;
+  }
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+  std::cout << "width: " << width << " height: " << height << std::endl;
+  glViewport(0, 0, width, height);
+}
+
+int main() {
+  // 初始化 glfw
+  glfwInit();
+
+  // 设置需要的 glfw 版本至少为 3.3
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+
+  // 设置 glfw 使用核心模式 core profile
+  // 这意味着我们只能使用 OpenGL 功能的一个子集
+  // 即不使用那些已经被废弃的向后兼容特性
+  // “向后兼容特性”指的是那些为了兼容旧版本OpenGL而保留的特性
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+  // 如果你使用 MAC OS X 系统，需要加上下面这行代码
+  // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+  // 创建一个窗口对象 前三个参数为窗口的宽高和标题
+  GLFWwindow* window = glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+  if (window == NULL) {
+    std::cout << "Failed to create GLFW window" << std::endl;
+    glfwTerminate();
+    return -1;
+  }
+
+  // 将窗口的上下文设置为当前线程的主上下文
+  glfwMakeContextCurrent(window);
+
+  // 初始化 GLAD
+  // GLAD 是用来管理 OpenGL 的函数指针的
+  // 所以在调用任何 OpenGL 的函数之前我们需要初始化 GLAD
+  // 给 GLAD 传入了用来加载系统相关的 OpenGL 函数指针地址的函数
+  // GLFW 给我们的是 glfwGetProcAddress 函数
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    std::cout << "Failed to initialize GLAD" << std::endl;
+    return -1;
+  }
+
+  // 调用 glViewport 函数来设置视口的尺寸
+  // 前两个参数控制窗口左下角的位置
+  // 第三个和第四个参数控制渲染窗口的宽度和高度（像素）
+  glViewport(0, 0, 800, 600);
+
+  // 注册一个回调函数，当窗口大小改变时调用
+  // 这个帧缓冲大小函数需要一个GLFWwindow作为它的第一个参数
+  // 以及两个整数表示窗口的新尺寸
+  // 每当窗口改变大小，GLFW 会调用这个函数并填充相应的参数
+  // 通过 glfwSetFramebufferSizeCallback 注册这个函数
+  // 告诉 GLFW 我们希望每当窗口调整大小的时候调用这个函数
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
+  // ================================
+  // ===========  源码编译  ===========
+  // ================================
+  // 5. 定义顶点着色器
+  // 我们暂时将顶点着色器的源代码硬编码在C风格字符串中
+  // 顶点着色器的源代码是用 GLSL 语言写成的
+  const char* vertexShaderSource =
+      "#version 330 core\n"
+      "layout (location = 0) in vec3 aPos;\n"
+      "void main()\n"
+      "{\n"
+      "  gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+      "}\0";
+  // 6. 创建顶点着色器对象
+  unsigned int vertexShader;
+  vertexShader = glCreateShader(GL_VERTEX_SHADER);
+  // 7. 把着色器源码附加到着色器对象上，然后编译它
+  // glShaderSource 函数把要编译的着色器对象作为第一个参数
+  // 第二参数指定了传递的源码字符串数量，这里只有一个
+  // 第三个参数是顶点着色器真正的源码
+  // 第四个参数我们先设置为NULL
+  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+  glCompileShader(vertexShader);
+  // 8. 检查编译是否成功
+  int success;
+  char infoLog[512];
+  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+              << infoLog << std::endl;
+  }
+
+  // 9. 定义片段着色器
+  // 片段着色器也被叫做像素着色器
+  // 片段着色器的主要目的是计算一个像素的最终颜色输出
+  // 片段着色器也是用 GLSL 语言写成的
+  const char* fragmentShaderSource =
+      "#version 330 core\n"
+      "out vec4 FragColor;\n"
+      "void main()\n"
+      "{\n"
+      "  FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+      "}\0";
+  // 10. 创建片段着色器对象
+  unsigned int fragmentShader;
+  fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+  glCompileShader(fragmentShader);
+  // 11. 检查编译是否成功
+  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+  if (!success) {
+    glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
+              << infoLog << std::endl;
+  }
+
+  // 12. 把顶点着色器和片段着色器链接到一个着色器程序对象
+  unsigned int shaderProgram;
+  shaderProgram = glCreateProgram();
+  glAttachShader(shaderProgram, vertexShader);
+  glAttachShader(shaderProgram, fragmentShader);
+  glLinkProgram(shaderProgram);
+  // 13. 检查链接是否成功
+  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+  if (!success) {
+    glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
+    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+              << infoLog << std::endl;
+  }
+  // 15. 删除着色器对象
+  // 在把着色器对象链接到程序对象以后，记得删除着色器对象
+  // 我们不再需要这些着色器对象了
+  glDeleteShader(vertexShader);
+  glDeleteShader(fragmentShader);
+
+  // ================================
+  // ===========  顶点对象  ===========
+  // ================================
+  // 1. 定义顶点
+  float vertices[] = {
+      0.5f,  0.5f,  0.0f,  // 右上角
+      0.5f,  -0.5f, 0.0f,  // 右下角
+      -0.5f, -0.5f, 0.0f,  // 左下角
+      -0.5f, 0.5f,  0.0f   // 左上角
+  };
+  unsigned int indices[] = {
+      // 注意索引从0开始!
+      // 此例的索引(0,1,2,3)就是顶点数组vertices的下标，
+      // 这样可以由下标代表顶点组合成矩形
+      0, 1, 3,  // 第一个三角形
+      1, 2, 3   // 第二个三角形
+  };
+  // 2. 定义顶点缓冲对象和顶点数组对象
+  unsigned int VBO, VAO;
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &VBO);
+  // 定义元素索引对象
+  unsigned int EBO;
+  glGenBuffers(1, &EBO);
+  // 3. 绑定顶点缓冲对象和顶点数组对象
+  glBindVertexArray(VAO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  // 绑定元素索引对象
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  // 4. 把顶点数据复制到缓冲中
+  // GL_STATIC_DRAW 表示数据不会或几乎不会改变
+  // GL_DYNAMIC_DRAW 表示数据会被改变很多
+  // GL_STREAM_DRAW 表示数据每次绘制时都会改变
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+               GL_STATIC_DRAW);
+
+  // 现在，我们已经把输入顶点数据发送给了GPU，
+  // 并指示了GPU如何在顶点和片段着色器中处理它。
+  // 就快要完成了，但还没结束，
+  // OpenGL还不知道它该如何解释内存中的顶点数据，
+  // 以及它该如何将顶点数据链接到顶点着色器的属性上。
+  // 我们需要告诉OpenGL怎么做。
+  // 16. 定义顶点属性指针
+  // 顶点属性指针告诉OpenGL该如何解析顶点数据
+  // 它的第一个参数指定我们要配置的顶点属性
+  // 我们希望把数据传递到哪个顶点属性中
+  // 还记得我们在顶点着色器中使用layout(location = 0)
+  // 定义了position顶点属性的位置值（Location）
+  // 它可以把顶点属性的位置值设置为0
+  // 第二个参数指定顶点属性的大小
+  // 顶点属性是一个vec3，它由3个值组成，所以大小是3
+  // 第三个参数指定数据的类型
+  // 这里是GL_FLOAT（GLSL中vec*都是由浮点数值组成的）
+  // 第四个参数定义我们是否希望数据被标准化
+  // 如果我们设置为GL_TRUE，所有数据都会被映射到0（对于有符号型signed数据是-1）到1之间
+  // 第五个参数叫做步长
+  // 它告诉我们在连续的顶点属性组之间的间隔
+  // 由于下个组位置数据在3个float之后，我们把步长设置为3 * sizeof(float)
+  // 第六个参数的类型是void*，所以需要我们进行这个奇怪的强制类型转换
+  // 它表示位置数据在缓冲中起始位置的偏移量
+  // 由于位置数据在数组的开头，所以这里是0
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  // ex. 对 glVertexAttribPointer 的调用将 VBO
+  // 注册为顶点属性的绑定顶点缓冲区对象, 之后我们可以安全的解除绑定 VBO
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  // ex. glVertexAttribPointer 之后我们可以安全的解除绑定 VAO
+  // 这样其他的 VAO 调用就不会意外的修改这个 VAO
+  glBindVertexArray(0);
+  // 无论如何，VAO都需要调用glBindVertexArray，
+  // 因此当没有直接必要时，我们通常不会取消绑定VAO（也不会取消绑定VBO）。
+
+  // 渲染循环
+  // glfwWindowShouldClose 函数在我们每次循环的开始前
+  // 检查一次GLFW是否被要求退出，如果是的话，该函数返回true
+  while (!glfwWindowShouldClose(window)) {
+    // 创建一个 processInput 函数来处理输入
+    // 让所有的输入代码保持整洁
+    processInput(window);
+
+    // 渲染指令
+    // 我们可以通过调用 glClear 函数来清空屏幕的颜色缓冲
+    // 它接受一个缓冲位 (Bit) 来指定要清空的缓冲
+    // 可能的缓冲位有
+    // GL_COLOR_BUFFER_BIT
+    // GL_DEPTH_BUFFER_BIT
+    // GL_STENCIL_BUFFER_BIT
+    // 由于现在我们只关心颜色值，所以我们只清空颜色缓冲
+    // 清空颜色缓冲后，整个颜色缓冲都会被填充为 glClearColor 里所设置的颜色
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    // ================================
+    // ===========  三角形 x 2  ===========
+    // ================================
+
+    // 14. 激活着色器程序
+    // 在 glUseProgra m函数调用之后
+    // 每个着色器调用和渲染调用都会使用这个程序对象（也就是之前写的着色器)
+    // 直到你调用 glUseProgram 或者使用不同的程序对象
+    glUseProgram(shaderProgram);
+
+    // ex. 绑定VAO
+    glBindVertexArray(VAO);
+
+    // 17. 绘制三角形 x 2
+    // glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+    // ex. 解绑VAO (实际上没有必要, 因为我们只有一个 VAO)
+    glBindVertexArray(0);
+
+    // glfwSwapBuffers 函数会交换颜色缓冲
+    // 它是一个储存着GLFW窗口每一个像素颜色值的大缓冲
+    // 它在这一迭代中被用来绘制，并且将会作为输出显示在屏幕上
+    glfwSwapBuffers(window);
+
+    // glfwPollEvents 函数检查有没有触发什么事件 (键盘输入、鼠标移动等)
+    // 更新窗口状态并调用对应的回调函数 (可以通过回调方法手动设置)
+    glfwPollEvents();
+  }
+
+  // optional: de-allocate all resources once they've outlived their purpose:
+  // ------------------------------------------------------------------------
+  glDeleteVertexArrays(1, &VAO);
+  glDeleteBuffers(1, &VBO);
+  glDeleteProgram(shaderProgram);
+
+  // 调用 glfwTerminate 函数
+  // 释放或者删除之前的分配的所有资源
+  glfwTerminate();
+  return 0;
+}
