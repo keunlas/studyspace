@@ -31,46 +31,90 @@ int main() {
   // ================================
   // ===========  顶点对象  ===========
   // ================================
-  float vertices[] = {
+  float orange_vertices[] = {
       0.5f,  0.5f,  0.0f,  // 右上角
+      0.5f,  -0.5f, 0.0f,  // 右下角
+      -0.5f, 0.5f,  0.0f   // 左上角
+  };
+
+  unsigned int orange_VBO, orange_VAO;
+  glGenVertexArrays(1, &orange_VAO);
+  glGenBuffers(1, &orange_VBO);
+
+  glBindVertexArray(orange_VAO);
+
+  glBindBuffer(GL_ARRAY_BUFFER, orange_VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(orange_vertices), orange_vertices,
+               GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+
+  float yellow_vertices[] = {
       0.5f,  -0.5f, 0.0f,  // 右下角
       -0.5f, -0.5f, 0.0f,  // 左下角
       -0.5f, 0.5f,  0.0f   // 左上角
   };
 
-  unsigned int indices[] = {
-      0, 1, 3,  // 第一个三角形
-      1, 2, 3   // 第二个三角形
-  };
+  unsigned int yellow_VBO, yellow_VAO;
+  glGenVertexArrays(1, &yellow_VAO);
+  glGenBuffers(1, &yellow_VBO);
 
-  unsigned int VBO, VAO, EBO;
+  glBindVertexArray(yellow_VAO);
 
-  glGenVertexArrays(1, &VAO);
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
-
-  glBindVertexArray(VAO);
-
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
+  glBindBuffer(GL_ARRAY_BUFFER, yellow_VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(yellow_vertices), yellow_vertices,
                GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
   glEnableVertexAttribArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
+
+  float yellow_vertices2[] = {
+      0.5f, -0.5f, 0.0f,  // 右下角
+      1.0f, -0.5f, 0.0f,  // 左下角
+      1.0f, 0.5f,  0.0f   // 左上角
+  };
+
+  unsigned int yellow_VBO2, yellow_VAO2;
+  glGenVertexArrays(1, &yellow_VAO2);
+  glGenBuffers(1, &yellow_VBO2);
+
+  glBindVertexArray(yellow_VAO2);
+
+  glBindBuffer(GL_ARRAY_BUFFER, yellow_VBO2);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(yellow_vertices2), yellow_vertices2,
+               GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
+
+  glBindBuffer(GL_ARRAY_BUFFER, 0);
+  glBindVertexArray(0);
 
   // Loop
   while (!glfwWindowShouldClose(window)) {
     process_input(window);
     clear_screen();
 
-    // Draw
-    // glUseProgram(orange_shader_program);
-    // glDrawArrays(GL_TRIANGLES, 0, 3);
+    // Begin Draw
+    glBindVertexArray(orange_VAO);
     glUseProgram(orange_shader_program);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    glBindVertexArray(yellow_VAO);
+    glUseProgram(yellow_shader_program);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    glBindVertexArray(yellow_VAO2);
+    glUseProgram(yellow_shader_program);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+    // End Draw
 
     glfwSwapBuffers(window);
     glfwPollEvents();
